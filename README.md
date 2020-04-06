@@ -1,2 +1,2 @@
 # Advanced-Mechatronics-course-projects
-This repo includes my work in ME433
+This repo includes Juntao He's work in ME433
