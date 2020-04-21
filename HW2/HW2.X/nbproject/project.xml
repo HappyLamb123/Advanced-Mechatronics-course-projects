@@ -3,19 +3,16 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>HW1</name>
-            <creation-uuid>5a6c59f4-3a96-4dc1-9fb7-d973e10fb48d</creation-uuid>
+            <name>HW2</name>
+            <creation-uuid>f9f99288-3f91-48f9-ab5c-2e80e05093f7</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
-            <header-extensions>h</header-extensions>
+            <header-extensions/>
             <asminc-extensions/>
             <sourceEncoding>ISO-8859-1</sourceEncoding>
             <make-dep-projects/>
-            <sourceRootList>
-                <sourceRootElem>../../../ME433_2020/uart</sourceRootElem>
-                <sourceRootElem>../../../ME433_2020/spi</sourceRootElem>
-            </sourceRootList>
+            <sourceRootList/>
             <confList>
                 <confElem>
                     <name>default</name>
