@@ -1,6 +1,6 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
-
+#include <math.h>
 // DEVCFG0
 #pragma config DEBUG = ON // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
@@ -65,19 +65,53 @@ int main() {
     __builtin_enable_interrupts();
  //   int i = 0;
  //   char message[100];
-    unsigned char i=0;
+  //  unsigned short v[9]={0,250,500,1000,2000,1000,500,250,0};
+    unsigned short v1,v2;
+    unsigned char c1=1,c2=0;
+    unsigned short p1,p2;
+    unsigned short p1_dum,p2_dum;
+    
+    p2=c2<<15;
+    p2=p2|(0b111<<12);
+    p2_dum=p2;
+    p1=c1<<15;
+    p1=p1|(0b111<<12);
+    p1_dum=p1;  
+    unsigned int i=0,j=0;
     while (1) {
-        LATAbits.LATA0=0;
-        spi_io(i);
-        LATAbits.LATA0 =1;
+        if (i<40){
+            v2=100*(i+1);
+            p2=p2_dum|v2;
+        }
+        else if (i>=40)
+        {   
+            v2=8000-100*(i+1);
+            p2=p2_dum|v2;
+        }
         
+        v1=2000*sin(100*j)+2000;
+        p1=p1_dum|v1;
+       /* v=i-pow(i,3)/(3*2)+pow(i,5)/(5*4*3*2);
+        p=p_dum|v;*/
+    //    p=p_dum|v[i];
+        LATAbits.LATA0=0;
+        spi_io(p1>>8);
+        spi_io(p1);
+        
+        LATAbits.LATA0 =1;
+        LATAbits.LATA0=0;
+        spi_io(p2>>8);
+        spi_io(p2);
+        LATAbits.LATA0 =1;
+        j++;
         i++;
-        if (i == 100){
+        if (i == 79){
             i=0;
         }
+    /*
         _CP0_SET_COUNT(0);
-        while(_CP0_GET_COUNT()<24000000){}
-
+        while(_CP0_GET_COUNT()<10000){}
+*/
        /* if(PORTBbits.RB4==0)
         {
             
