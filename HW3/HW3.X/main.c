@@ -1,7 +1,7 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
 #include <math.h>
-#include "i2c_master_noint1.h"
+#include "i2c_master_noint.h"
 // DEVCFG0
 #pragma config DEBUG = ON // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
