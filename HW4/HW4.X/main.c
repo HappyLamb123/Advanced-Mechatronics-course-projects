@@ -57,7 +57,8 @@ int main(){
     unsigned char GPIOB_reg=0x13;
     char message[50];
     char message2[50];
-    int i=20;
+    int count1,count2;
+    
     //initialize I2C
     i2c_master_setup();
     setPin(Write_add,IODIRA_reg,IODIRA_value);
@@ -68,26 +69,41 @@ int main(){
     ssd1306_setup();
   //  draw_letter('A'-0x20);
     
-    sprintf(message,"my var = %d",i);
-    char dd[50]={'B','!','D'};
-    drawMessage(1,0,message);
+    
+    char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
+
+    drawMessage(1,0,dd);
+  //  drawMessage(0,16,message);
+
 //    i=1/_CP0_GET_COUNT();
 //    sprintf(message2,'The fps = %d',i);
 //    drawMessage(1,24,message2);
+    int i=1;
     while(1){
-        x=0;
-        y=0;
-        color=0;
-        LATAbits.LATA4=1;
-        ssd1306_drawPixel(x,y,color);
+        _CP0_SET_COUNT(0);
+        
+        
+        sprintf(message,"i = %d",i);
+        drawMessage(0,16,message);
         ssd1306_update();
-        delay();
-        color=1;
-        ssd1306_drawPixel(x,y,color);
+        count1=_CP0_GET_COUNT();
+        count2=24000000/count1;
+        sprintf(message,"fps = %d",count2);
+        drawMessage(0,24,message);  
         ssd1306_update();
-        LATAbits.LATA4=0;
-        delay();
-  
+//        x=0;
+//        y=0;
+//        color=0;
+//        LATAbits.LATA4=1;
+//        ssd1306_drawPixel(x,y,color);
+//        ssd1306_update();
+//        delay();
+//        color=1;
+//        ssd1306_drawPixel(x,y,color);
+//        ssd1306_update();
+//        LATAbits.LATA4=0;
+//        delay();
+        i++;
 //        
     }
     
@@ -144,11 +160,13 @@ void drawMessage(unsigned char x_begin,unsigned char y_begin,char *message){
     unsigned char x,y;
     unsigned char color;
     while(message[s]!='\0'){
-        if (x_begin+5*s>128){
+        if (x_begin+5>125){
             x_begin=0;
             y_begin+=8;
         }
+        else if (s!=0){
         x_begin+=5;
+        }
         for (j=0; j<5; j++){
             for (i=0; i<8;i++){
                 x=j+x_begin;
@@ -168,7 +186,7 @@ void drawMessage(unsigned char x_begin,unsigned char y_begin,char *message){
         
         s++;
     }
-    ssd1306_update();
+    
     
 }
 
