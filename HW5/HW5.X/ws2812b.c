@@ -1,22 +1,20 @@
 // WS2812B library
 
-#include <proc/p32mx170f256b.h>
-
 #include "ws2812b.h"
 // other includes if necessary for debugging
 
 // Timer2 delay times, you can tune these if necessary
-#define LOWTIME 15// number of 48MHz cycles to be low for 0.35uS
+#define LOWTIME 15 // number of 48MHz cycles to be low for 0.35uS
 #define HIGHTIME 65 // number of 48MHz cycles to be high for 1.65uS
 
 // setup Timer2 for 48MHz, and setup the output pin
 void ws2812b_setup() {
-    T2CONbits.TCKPS = 0b000; // Timer2 prescaler N=1 (1:1)
+    T2CONbits.TCKPS =0; // Timer2 prescaler N=1 (1:1)
     PR2 = 65535; // maximum period
     TMR2 = 0; // initialize Timer2 to 0
     T2CONbits.ON = 1; // turn on Timer2
-    
-    // initi alize output pin as off
+
+    // initialize output pin as off
     // TRIS...
     TRISBbits.TRISB6=0;
     // LAT...
@@ -27,7 +25,7 @@ void ws2812b_setup() {
 void ws2812b_setColor(wsColor * c, int numLEDs) {
     int i = 0; int j = 0; // for loops
     int numBits = 2 * 3 * 8 * numLEDs; // the number of high/low bits to store, 2 per color bit
-    volatile unsigned int delay_times[2*3*8 *5 ]; // I only gave you 5 WS2812B, adjust this if you get more somewhere
+    volatile unsigned int delay_times[2*3*8 * 5]; // I only gave you 5 WS2812B, adjust this if you get more somewhere
 
     // start at time at 0
     delay_times[0] = 0;
@@ -39,47 +37,11 @@ void ws2812b_setColor(wsColor * c, int numLEDs) {
         // loop through each color bit, MSB first
         for (j = 7; j >= 0; j--) {
             // if the bit is a 1
-            if (((c[i].r>>j)& 0b1)==1) {
+            if (((c[i].r>>j)&1)==1) {
                 // the high is longer
                 delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
                 nB++;
                 delay_times[nB] = delay_times[nB - 1] + LOWTIME;
-                nB++;
-            } 
-            // if the bit is a 0
-            else {
-                // the low is longer
-                delay_times[nB] = delay_times[nB - 1] +LOWTIME;
-                nB++;
-                delay_times[nB] = delay_times[nB - 1] +HIGHTIME;
-                nB++;
-            }
-        }
-        for (j = 7; j >= 0; j--) {
-            // if the bit is a 1
-            if (((c[i].g>>j)& 0b1)==1) {
-                // the high is longer
-                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
-                nB++;
-                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
-                nB++;
-            } 
-            // if the bit is a 0
-            else {
-                // the low is longer
-                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
-                nB++;
-                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
-                nB++;
-            }
-        }
-        for (j = 7; j >= 0; j--) {
-            // if the bit is a 1
-            if (((c[i].b>>j)& 0b1)==1) {
-                // the high is longer
-                delay_times[nB] = delay_times[nB - 1] +HIGHTIME;
-                nB++;
-                delay_times[nB] = delay_times[nB - 1] +LOWTIME;
                 nB++;
             } 
             // if the bit is a 0
@@ -92,7 +54,43 @@ void ws2812b_setColor(wsColor * c, int numLEDs) {
             }
         }
         // do it again for green
+        for (j = 7; j >= 0; j--) {
+            // if the bit is a 1
+            if (((c[i].g>>j)&1)==1) {
+                // the high is longer
+                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
+                nB++;
+                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
+                nB++;
+            } 
+            // if the bit is a 0
+            else {
+                // the low is longer
+                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
+                nB++;
+                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
+                nB++;
+            }
+        }
 		// do it again for blue
+        for (j = 7; j >= 0; j--) {
+            // if the bit is a 1
+            if (((c[i].b>>j)&1)==1) {
+                // the high is longer
+                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
+                nB++;
+                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
+                nB++;
+            } 
+            // if the bit is a 0
+            else {
+                // the low is longer
+                delay_times[nB] = delay_times[nB - 1] + LOWTIME;
+                nB++;
+                delay_times[nB] = delay_times[nB - 1] + HIGHTIME;
+                nB++;
+            }
+        }
     }
 
     // turn on the pin for the first high/low
@@ -106,7 +104,6 @@ void ws2812b_setColor(wsColor * c, int numLEDs) {
     LATBbits.LATB6 = 0;
     TMR2 = 0;
     while(TMR2 < 2400){} // wait 50uS, reset condition
-    
 }
 
 // adapted from https://forum.arduino.cc/index.php?topic=8498.0

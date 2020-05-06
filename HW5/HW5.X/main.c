@@ -1,7 +1,9 @@
 #include<xc.h>           // processor SFR definitions
 #include<sys/attribs.h>  // __ISR macro
 #include <math.h>
+#include "i2c_master_noint.h"
 #include "ws2812b.h"
+#include "ssd1306.h"
 #include <stdio.h>
 // DEVCFG0
 #pragma config DEBUG = ON // disable debugging
@@ -37,52 +39,83 @@ void delay(){
             _CP0_SET_COUNT(0);
             while(_CP0_GET_COUNT()<24000000/100){}
 }
-
+void setPin(unsigned char address,unsigned char regi,unsigned char value);
+void draw_letter(unsigned char num);
+//void write_printf(unsigned char i);
+void drawMessage(unsigned char x_begin, unsigned char y_begin, char *message);
+unsigned char readPin(unsigned char address,unsigned char regi);
 int main(){
-    wsColor color[1];
-    //color[4]={HSBtoRGB(30.0,1.0,0.95),HSBtoRGB(120.0,1.0,0.95),HSBtoRGB(180.0,1.0,0.95),HSBtoRGB(230.0,1.0,0.95)};
-    unsigned char R=0b10000000;
-    unsigned char G=0b00000000;
-    unsigned char B=0b00000000;
+    TRISAbits.TRISA4=0;
+    LATAbits.LATA4=0;
+    unsigned char Write_add=0b01000000;
+    unsigned char IODIRA_reg=0x00;
+    unsigned char IODIRA_value=0x00;
+    unsigned char IODIRB_reg=0x01;
+    unsigned char IODIRB_value=0xFF;
+    unsigned char OLATA_reg=0x14;
+    unsigned char OLATA_value=0b10000000;
+    unsigned char GPIOB_reg=0x13;
+    char message[50];
+    char message2[50];
+    int count1,count2;
     
-   /* int i=0;
-    for (i=0;i<1;i++){
-    color[i].r=R;
-    color[i].g=G;
-    color[i].b=B;
-    }
-    */
-    /*
-    color[0].r=R;
-    color[0].g=G;
-    color[0].b=B;
-    color[1].r=R;
-    color[1].g=G;
-    color[1].b=B;
-    color[2].r=R;
-    color[2].g=G;
-    color[2].b=B;
-    color[3].r=R;
-    color[3].g=G;
-    color[3].b=B;*/
-   /* color[0]=HSBtoRGB(30.0,1,0.95);
-    color[1]=HSBtoRGB(120.0,1,0.95);
-    color[2]=HSBtoRGB(180.0,1,0.95);
-    color[3]=HSBtoRGB(270.0,1,0.95);
-    */
-    int num=1;
-    int i=0;
-  /*  color[0].r=R;
-    color[0].g=G;
-    color[0].b=B;*/
-    ws2812b_setup();
-    while(1){
-      for(i=0;i<=360;i++) {
-        //  color[0]=HSBtoRGB(i,1,0.95);
-          ws2812b_setColor(color,num);
-        //  delay();
-      }
+    //initialize I2C
+    i2c_master_setup();
+    setPin(Write_add,IODIRA_reg,IODIRA_value);
+    setPin(Write_add,IODIRB_reg,IODIRB_value);
 
+    ssd1306_setup();
+    ws2812b_setup();
+    int i=0;
+    wsColor color[4];
+  
+    while(1){
+        int j=30;
+        int k=90;
+        int l=180;
+        for (i=0;i<=360;i++){
+            color[0]=HSBtoRGB(i,0.8,0.5);
+            color[1]=HSBtoRGB(j,0.8,0.5);
+            color[2]=HSBtoRGB(k,0.8,0.5);
+            color[3]=HSBtoRGB(l,0.8,0.5);
+
+            if(j==360){j=0;}
+            if(k==360){k=0;}
+            if(l==360){l=0;}
+            ws2812b_setColor(color,4);
+            j++;
+            k++;
+            l++;
+           // delay();
+        }
+     //   delay();
+    
+       
+//        
     }
-    return 0;
+    
+
 }
+void setPin(unsigned char address,unsigned char regi,unsigned char value){
+    
+    i2c_master_start();
+    i2c_master_send(address);
+    i2c_master_send(regi);
+    i2c_master_send(value);
+    i2c_master_stop();
+}
+unsigned char readPin(unsigned char address,unsigned char regi){
+    unsigned char pushstate;
+    i2c_master_start();
+    i2c_master_send(address);
+    i2c_master_send(regi);
+    i2c_master_restart();
+    i2c_master_send(address|0b00000001);
+    pushstate=i2c_master_recv();
+    i2c_master_ack(1);
+    i2c_master_stop();
+    return pushstate;
+}
+
+
+
