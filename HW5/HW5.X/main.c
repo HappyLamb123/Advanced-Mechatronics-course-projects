@@ -37,7 +37,7 @@
 #pragma config IOL1WAY = OFF // allow multiple reconfigurations
 void delay(){
             _CP0_SET_COUNT(0);
-            while(_CP0_GET_COUNT()<24000000/100){}
+            while(_CP0_GET_COUNT()<24000000/10){}
 }
 void setPin(unsigned char address,unsigned char regi,unsigned char value);
 void draw_letter(unsigned char num);
@@ -70,14 +70,14 @@ int main(){
     wsColor color[4];
   
     while(1){
-        int j=30;
-        int k=90;
+        int j=60;
+        int k=120;
         int l=180;
-        for (i=0;i<=360;i++){
-            color[0]=HSBtoRGB(i,0.8,0.5);
-            color[1]=HSBtoRGB(j,0.8,0.5);
-            color[2]=HSBtoRGB(k,0.8,0.5);
-            color[3]=HSBtoRGB(l,0.8,0.5);
+        for (i=0;i<=360;i=i+1){
+            color[0]=HSBtoRGB(i,1,0.5);
+            color[1]=HSBtoRGB(j,1,0.5);
+            color[2]=HSBtoRGB(k,1,0.5);
+            color[3]=HSBtoRGB(l,1,0.5);
 
             if(j==360){j=0;}
             if(k==360){k=0;}
@@ -86,8 +86,9 @@ int main(){
             j++;
             k++;
             l++;
-           // delay();
+            delay();
         }
+        delay();
      //   delay();
     
        
