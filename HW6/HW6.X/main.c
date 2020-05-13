@@ -44,7 +44,8 @@ void delay(){
 void draw_letter(unsigned char num);
 //void write_printf(unsigned char i);
 void drawMessage(unsigned char x_begin, unsigned char y_begin, char *message);
-
+void bar_x(signed short x);
+void bar_y(signed short y);
 int main(){
     TRISAbits.TRISA4=0;
     LATAbits.LATA4=0;
@@ -68,7 +69,7 @@ int main(){
     imu_setup();
     
     char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
-    
+    int state=1;
     ssd1306_clear();
     while (1){
         imu_read(IMU_OUT_TEMP_L,IMU_receive,7);
@@ -78,17 +79,25 @@ int main(){
         LATAbits.LATA4=0;
         _CP0_SET_COUNT(0);
         while(_CP0_GET_COUNT()<24000000/50){}
-        sprintf(message,"g: %d %d %d",IMU_receive[1],IMU_receive[2],IMU_receive[3]);
-        drawMessage(1,0,message);
-        ssd1306_update();
-        sprintf(message,"a: %d %d %d",IMU_receive[4],IMU_receive[5],IMU_receive[6]);
-        drawMessage(1,10,message);
-        ssd1306_update();
-        sprintf(message,"t: %d",IMU_receive[0]);
-        drawMessage(1,20,message);
-        ssd1306_update();
-
+    //display a,g and t
+        if (!state){
+            sprintf(message,"g: %d %d %d",IMU_receive[1],IMU_receive[2],IMU_receive[3]);
+            drawMessage(1,0,message);
+            ssd1306_update();
+            sprintf(message,"a: %d %d %d",IMU_receive[4],IMU_receive[5],IMU_receive[6]);
+            drawMessage(1,10,message);
+            ssd1306_update();
+            sprintf(message,"t: %d",IMU_receive[0]);
+            drawMessage(1,20,message);
+            ssd1306_update();
+        }
+        else{
+            bar_x(-IMU_receive[5]);
+            bar_y(-IMU_receive[4]);
+        }
         
+        ssd1306_update();
+        ssd1306_clear();
     }
     
 
@@ -139,6 +148,37 @@ void drawMessage(unsigned char x_begin,unsigned char y_begin,char *message){
     }
     
     
+}
+void bar_x(signed short x){
+    int num,i;
+    num=x/512;
+    if (num>0){
+        for(i=0;i<num;i++){
+            ssd1306_drawPixel(64+i,16,1);
+        }
+    }
+    else{
+        num=-num;
+        for(i=0;i<num;i++){
+            ssd1306_drawPixel(64-i,16,1);
+        }
+    }
+}
+void bar_y(signed short y){
+    int num,i;
+    num=y/2050;
+    
+    if (num>0){
+        for(i=0;i<num;i++){
+            ssd1306_drawPixel(64,16+i,1);
+        }
+    }
+    else{
+        num=-num;
+        for(i=0;i<num;i++){
+            ssd1306_drawPixel(64,16-i,1);
+        }
+    }
 }
 
 
