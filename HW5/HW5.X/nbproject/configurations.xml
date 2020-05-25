@@ -7,6 +7,7 @@
       <itemPath>i2c_master_noint.h</itemPath>
       <itemPath>ssd1306.h</itemPath>
       <itemPath>ws2812b.h</itemPath>
+      <itemPath>../../../../../Downloads/HW5.X/HW5.X/font.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -28,6 +29,7 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>.</Elem>
+    <Elem>../../../../../Downloads/HW5.X/HW5.X</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>

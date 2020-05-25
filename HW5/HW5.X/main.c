@@ -21,13 +21,13 @@
 #pragma config OSCIOFNC = OFF // disable clock output
 #pragma config FPBDIV = DIV_1 // divide sysclk freq by 1 for peripheral bus clock
 #pragma config FCKSM = CSDCMD // disable clock switch and FSCM
-#pragma config WDTPS = PS1048576 // use largest wdt
+#pragma config WDTPS = PS1 // use largest wdt
 #pragma config WINDIS = OFF // use non-window mode wdt
 #pragma config FWDTEN = OFF // wdt disabled
 #pragma config FWDTWINSZ = WINSZ_25 // wdt window at 25%
 
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
-#pragma config FPLLIDIV = DIV_12 // divide input clock to be in range 4-5MHz
+#pragma config FPLLIDIV = DIV_2 // divide input clock to be in range 4-5MHz
 #pragma config FPLLMUL = MUL_24 // multiply clock after FPLLIDIV
 #pragma config FPLLODIV = DIV_2 // divide clock after FPLLMUL to get 48MHz
 
@@ -37,58 +37,84 @@
 #pragma config IOL1WAY = OFF // allow multiple reconfigurations
 void delay(){
             _CP0_SET_COUNT(0);
-            while(_CP0_GET_COUNT()<24000000/10){}
+            while(_CP0_GET_COUNT()<24000000/100){}
 }
 void setPin(unsigned char address,unsigned char regi,unsigned char value);
-void draw_letter(unsigned char num);
+//void draw_letter(unsigned char num);
 //void write_printf(unsigned char i);
-void drawMessage(unsigned char x_begin, unsigned char y_begin, char *message);
+//void drawMessage(unsigned char x_begin, unsigned char y_begin, char *message);
 unsigned char readPin(unsigned char address,unsigned char regi);
 int main(){
-    TRISAbits.TRISA4=0;
-    LATAbits.LATA4=0;
-    unsigned char Write_add=0b01000000;
-    unsigned char IODIRA_reg=0x00;
-    unsigned char IODIRA_value=0x00;
-    unsigned char IODIRB_reg=0x01;
-    unsigned char IODIRB_value=0xFF;
-    unsigned char OLATA_reg=0x14;
-    unsigned char OLATA_value=0b10000000;
-    unsigned char GPIOB_reg=0x13;
-    char message[50];
-    char message2[50];
-    int count1,count2;
-    
-    //initialize I2C
-    i2c_master_setup();
-    setPin(Write_add,IODIRA_reg,IODIRA_value);
-    setPin(Write_add,IODIRB_reg,IODIRB_value);
+     __builtin_disable_interrupts(); // disable interrupts while initializing things
 
+    // set the CP0 CONFIG register to indicate that kseg0 is cacheable (0x3)
+    __builtin_mtc0(_CP0_CONFIG, _CP0_CONFIG_SELECT, 0xa4210583);
+
+    // 0 data RAM access wait states
+    BMXCONbits.BMXWSDRM = 0x0;
+
+    // enable multi vector interrupts
+    INTCONbits.MVEC = 0x1;
+
+    // disable JTAG to get pins back
+    DDPCONbits.JTAGEN = 0;
+
+    // do your TRIS and LAT commands here
+    TRISAbits.TRISA4=0;
+    TRISBbits.TRISB4 = 1;
+    LATAbits.LATA4=0;
+//    i2c_master_setup();
+//    ssd1306_setup();
+    
+    __builtin_enable_interrupts();
+    unsigned char WriteAddress = 0b01000000;
+    unsigned char ReadAddress = 0b01000001;
+    unsigned char IODIRA = 0x00;
+    unsigned char IODIRB = 0x01;
+    unsigned char OLATA = 0x14;
+    unsigned char GPIOB = 0x13;
+
+    // Initialized
+    i2c_master_setup();
     ssd1306_setup();
     ws2812b_setup();
-    int i=0;
+    setPin(WriteAddress, IODIRA, 0x00);
+    setPin(WriteAddress, IODIRB, 0xFF);
+    setPin(WriteAddress, OLATA, 0x00); 
+    ws2812b_setup();
+   
+    
+    //initialize I2C
+    
+//    setPin(Write_add,IODIRA_reg,IODIRA_value);
+//    setPin(Write_add,IODIRB_reg,IODIRB_value);
+
+
+    int i,j,k,l;
     wsColor color[4];
   
     while(1){
-        int j=60;
-        int k=120;
-        int l=180;
-        for (i=0;i<=360;i=i+1){
-            color[0]=HSBtoRGB(i,1,0.5);
-            color[1]=HSBtoRGB(j,1,0.5);
-            color[2]=HSBtoRGB(k,1,0.5);
-            color[3]=HSBtoRGB(l,1,0.5);
+        i=0;
+        j=60;
+        k=120;
+        l=180;
+        for (i=0;i<=360;i++){
+            color[0]=HSBtoRGB(i,1,0.95);
+            color[1]=HSBtoRGB(j,1,0.95);
+            color[2]=HSBtoRGB(k,1,0.95);
+            color[3]=HSBtoRGB(l,1,0.95);
 
             if(j==360){j=0;}
             if(k==360){k=0;}
             if(l==360){l=0;}
-            ws2812b_setColor(color,4);
+            
             j++;
             k++;
             l++;
+            ws2812b_setColor(color,4);
             delay();
         }
-        delay();
+        
      //   delay();
     
        
@@ -117,6 +143,5 @@ unsigned char readPin(unsigned char address,unsigned char regi){
     i2c_master_stop();
     return pushstate;
 }
-
 
 
