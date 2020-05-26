@@ -7,11 +7,11 @@
 #include "ssd1306.h"
 #include <stdio.h>
 // DEVCFG0
-#pragma config DEBUG = ON // disable debugging
+#pragma config DEBUG = OFF // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
 #pragma config ICESEL = ICS_PGx1 // use PGED1 and PGEC1
 #pragma config PWP = OFF // disable flash write protect
-#pragma config BWP = OFF // disable boot write protect
+#pragma config BWP = OFF// disable boot write protect
 #pragma config CP = OFF // disable code protect
 
 // DEVCFG1
@@ -28,7 +28,7 @@
 #pragma config FWDTWINSZ = WINSZ_25 // wdt window at 25%
 
 // DEVCFG2 - get the sysclk clock to 48MHz from the 8MHz crystal
-#pragma config FPLLIDIV = DIV_12 // divide input clock to be in range 4-5MHz
+#pragma config FPLLIDIV = DIV_2 // divide input clock to be in range 4-5MHz
 #pragma config FPLLMUL = MUL_24 // multiply clock after FPLLIDIV
 #pragma config FPLLODIV = DIV_2 // divide clock after FPLLMUL to get 48MHz
 
@@ -36,16 +36,17 @@
 #pragma config USERID = 0 // some 16bit userid, doesn't matter what
 #pragma config PMDL1WAY = OFF // allow multiple reconfigurations
 #pragma config IOL1WAY = OFF // allow multiple reconfigurations
+
+
+
 void delay(){
             _CP0_SET_COUNT(0);
-            while(_CP0_GET_COUNT()<24000000/1000){}
+            while(_CP0_GET_COUNT()<24000000/10){}
 }
 
 void draw_letter(unsigned char num);
 //void write_printf(unsigned char i);
 void drawMessage(unsigned char x_begin, unsigned char y_begin, char *message);
-void bar_x(signed short x);
-void bar_y(signed short y);
 void setPin(unsigned char address,unsigned char regi,unsigned char value);
 unsigned char readPin(unsigned char address,unsigned char regi);
 int main(){
@@ -90,35 +91,43 @@ int main(){
     char message[50];
     char message2[50];
     int count1,count2;
-    signed short IMU_receive[7];
     //initialize I2C , ssd and adc and ctmu    
 //    AD1PCFGbits.PCFG11=0;
 //    AD1PCFGbits.PCFG12=0;
-
-    int read1,read2,calculate;
-    int delta_left,delta_right,left_position,right_position;
-    char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
-    int state=1;
-    ssd1306_clear();
-    int i;
     setPin(Write_add,IODIRA_reg,IODIRA_value);
     setPin(Write_add,IODIRB_reg,IODIRB_value);
-    wsColor c[1];
+    int read1,read2,calculate;
+    char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
+    ssd1306_clear();
+    int i;
+
+    wsColor color[4];
     while (1){
         read1=0;
         read2=0;
         for (i=0;i<10;i++){
-            read1+=ctmu_read(4,20);
+           read1+=ctmu_read(4,20);
             
-            read2+=ctmu_read(5,20);
+           read2+=ctmu_read(5,20);
         }
-        
+        color[0].r=255;
+        color[0].g=255;
+        color[0].b=255;
+        color[1].r=255;
+        color[1].g=255;
+        color[1].b=255;
+        color[2].r=255;
+        color[2].g=255;
+        color[2].b=255;
+        color[3].r=255;
+        color[3].g=255;
+        color[3].b=255;
+        /*color[1]=HSBtoRGB(151,0.37,0.3);
+        color[2]=HSBtoRGB(151,0.37,0.3);
+        color[3]=HSBtoRGB(151,0.37,0.3);*/
 //        read1=read1/10;
 //        read2=read2/10;
-        delta_left=10000-read1;
-        delta_right=10000-read2;
-        left_position=delta_left*100/(delta_left+delta_right);
-        right_position=(1-delta_right)*100/(delta_left+delta_right);
+
         sprintf(message," %d",read1);
         drawMessage(1,0,message);
         sprintf(message," %d",read2);
@@ -126,18 +135,21 @@ int main(){
         ssd1306_update();
         ssd1306_clear();
         //write if statement for LED blinking
-
-        if (read1<9000){
-            c[0]=HSBtoRGB(240,1,0.0001);
-
-            ws2812b_setColor(c,1);
+        ws2812b_setColor(color,4);
+       if (read1<5000){
+            color[0]=HSBtoRGB(60,1,0.95);
+            color[2]=HSBtoRGB(180,1,0.95);
+            ws2812b_setColor(color,4);
             delay();
         }
-        else if(read1>9000){
-          //  c[0]=HSBtoRGB(80,0,0);
-            ws2812b_setColor(c,1);
+       if(read2<5000){
+            color[1]=HSBtoRGB(120,1,0.95);
+            color[3]=HSBtoRGB(240,1,0.95);
+            ws2812b_setColor(color,4);
             delay();
         }
+        ws2812b_setColor(color,4);
+        delay();
        /* else if(read2<9000){
             color[0]=HSBtoRGB(0,1,0.5);
             color[1]=HSBtoRGB(0,1,0.5);
@@ -146,7 +158,7 @@ int main(){
             ws2812b_setColor(color,4);
             
         }*/
-            delay();
+         
     }
     
 

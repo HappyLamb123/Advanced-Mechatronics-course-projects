@@ -7,7 +7,7 @@
 #include "ssd1306.h"
 #include <stdio.h>
 // DEVCFG0
-#pragma config DEBUG = ON // disable debugging
+#pragma config DEBUG = OFF // disable debugging
 #pragma config JTAGEN = OFF // disable jtag
 #pragma config ICESEL = ICS_PGx1 // use PGED1 and PGEC1
 #pragma config PWP = OFF // disable flash write protect
@@ -69,7 +69,7 @@ int main(){
     imu_setup();
     
     char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
-    int state=1;
+    int state=0;
     ssd1306_clear();
     while (1){
         imu_read(IMU_OUT_TEMP_L,IMU_receive,7);
