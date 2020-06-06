@@ -5,6 +5,7 @@
 #include "ws2812b.h"
 #include "font.h"   
 #include "ssd1306.h"
+#include "rtcc.h"
 #include <stdio.h>
 // DEVCFG0
 #pragma config DEBUG = OFF // disable debugging
@@ -41,7 +42,7 @@
 
 void delay(){
             _CP0_SET_COUNT(0);
-            while(_CP0_GET_COUNT()<24000000/10){}
+            while(_CP0_GET_COUNT()<24000000/2){}
 }
 
 void draw_letter(unsigned char num);
@@ -88,6 +89,12 @@ int main(){
     unsigned char OLATA_reg=0x14;
     unsigned char OLATA_value=0b10000000;
     unsigned char GPIOB_reg=0x13;
+    unsigned long TIME,DATE;
+    int hrs[2];
+    int mins[2];
+    int secs[2];
+    rtccTime current_time;
+    char day[20];
     char message[50];
     char message2[50];
     int count1,count2;
@@ -98,11 +105,73 @@ int main(){
     setPin(Write_add,IODIRB_reg,IODIRB_value);
     int read1,read2,calculate;
     char dd[50]={"ABCDEFGHJKLMNOPQRSTUVWXYZ1234567890"};
-
-    int i;
-
-
+    TIME=0x12461000;
+    DATE=0x20060606;
+    rtcc_setup(TIME,DATE);
+    
+    int timeindex=12;
+    int dateindex=25;
+    int counter=0;
     while (1){
+        current_time=readRTCC();
+        dayOfTheWeek(current_time.wk,day);
+        sprintf(message,"%s","Hi!");
+        drawMessage(4,0,message);
+        sprintf(message,"%d",counter);
+        drawMessage(50,0,message);
+        sprintf(message,"%d",current_time.hr10);
+        drawMessage(4,timeindex,message);
+        sprintf(message,"%d",current_time.hr01);
+        drawMessage(10,timeindex,message);
+        sprintf(message,"%c",':');
+        drawMessage(16,timeindex,message);
+        sprintf(message,"%d",current_time.min10);
+        drawMessage(22,timeindex,message);
+        sprintf(message,"%d",current_time.min01);
+        drawMessage(28,timeindex,message);
+        sprintf(message,"%c",':');
+        drawMessage(34,timeindex,message);
+        sprintf(message,"%d",current_time.sec10);
+        drawMessage(40,timeindex,message);
+        sprintf(message,"%d",current_time.sec01);
+        drawMessage(46,timeindex,message);
+        sprintf(message,"%s",day);
+        drawMessage(4,dateindex,message);
+        sprintf(message,"%c",',');
+        drawMessage(45,dateindex,message);
+        sprintf(message,"%d",current_time.mn10);
+        drawMessage(54,dateindex,message);
+        sprintf(message,"%d",current_time.mn01);
+        drawMessage(60,dateindex,message);
+        sprintf(message,"%c",'/');
+        drawMessage(66,dateindex,message);
+        sprintf(message,"%d",current_time.dy10);
+        drawMessage(72,dateindex,message);
+        sprintf(message,"%d",current_time.dy01);
+        drawMessage(78,dateindex,message);
+        sprintf(message,"%c",'/');
+        drawMessage(84,dateindex,message);
+        sprintf(message,"%d",20);
+        drawMessage(90,dateindex,message);
+        sprintf(message,"%d",current_time.yr10);
+        drawMessage(100,dateindex,message);
+        sprintf(message,"%d",current_time.yr01);
+        drawMessage(106,dateindex,message);
+        
+//        sprintf(message," %d",current_time.yr01);
+//        drawMessage(14,dateindex,message);
+//        sprintf(message," %d",current_time.mn10);
+//        drawMessage(24,dateindex,message);
+//        sprintf(message," %d",current_time.mn01);
+//        drawMessage(34,dateindex,message);
+//          
+        
+////        sprintf(message," %d",current_time.yr10);
+//        drawMessage(4,8,message);
+        ssd1306_update();
+        ssd1306_clear();
+        delay();
+        counter++;
     }
     
 
